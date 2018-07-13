@@ -1,71 +1,103 @@
-class Stopwatch {
-    constructor(display) {
-        this.running = false;
-        this.display = display;
-        this.reset();
-        this.print(this.times);
+class Stopwatch extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            running: false,
+            times: {
+                minutes: 0,
+                seconds: 0,
+                miliseconds: 0
+            },
+        }
+        this.start = this.start.bind(this);
+        this.step = this.step.bind(this);
+        this.stop = this.stop.bind(this);
+        this.reset = this.reset.bind(this);
+        this.restart = this.restart.bind(this);
     }
     reset() {
-        this.times = {
+        this.setState({
+        times: {
             minutes: 0,
             seconds: 0,
             miliseconds: 0
-        };
-    }
-    print() {
-        this.display.innerText = this.format(this.times);
+        }
+        })
     }
     format(times) {
         return `${pad0(times.minutes)}:${pad0(times.seconds)}:${pad0(Math.floor(times.miliseconds))}`;
     }
     start() {
-        if (!this.running) {
-            this.running = true;
+        if (!this.state.running) {
+            this.setState ({
+                running: true
+            })
             this.watch = setInterval(() => this.step(), 10);
         }
     }
     step() {
-        if (!this.running) return;
+        if (!this.state.running) {
+            return;
+        }
         this.calculate();
-        this.print();
     }
     calculate() {
-        this.times.miliseconds += 1;
-        if (this.times.miliseconds >= 100) {
-            this.times.seconds += 1;
-            this.times.miliseconds = 0;
-        }
-        if (this.times.seconds >= 60) {
-            this.times.minutes += 1;
-            this.times.seconds = 0;
-        }
-    }
+		const times = this.state.times;
+		    times.miliseconds += 1;
+		    if (times.miliseconds >= 100) {
+		        times.seconds += 1;
+		        times.miliseconds = 0;
+		    }
+		    if (times.seconds >= 60) {
+		        times.minutes += 1;
+		        times.seconds = 0;
+		    }
+		    this.setState ({
+                times
+            })
+	}
     stop() {
-        this.running = false;
+        this.setState({
+            running: false
+        })
         clearInterval(this.watch);
     }
     restart() {
         this.reset();
-		this.print();
-	}
+    }
+    render() {
+        return (
+            <div>
+                <nav className="controls">
+                    <button 
+                        className="btn btn-success" 
+                        id="start"
+                        onClick={this.start}>Start</button>
+                    <button 
+                        className="btn btn-success" 
+                        id="stop"
+                        onClick={this.stop}>Stop</button>
+                    <button 
+                        className="btn btn-danger" 
+                        id="restart"
+                        onClick={this.restart}>Restart</button>
+                </nav>
+                <div className="timer">
+                    <div className="stopwatch">
+                    {this.format(this.state.times)}</div>
+                </div>
+            </div>
+       ) 
+    }
 }
-
-const stopwatch = new Stopwatch(
-    document.querySelector('.stopwatch')
-);
-let startButton = document.getElementById('start');
-startButton.addEventListener('click', () => stopwatch.start());
-
-let stopButton = document.getElementById('stop');
-stopButton.addEventListener('click', () => stopwatch.stop());
-
-let restartButton = document.getElementById('restart');
-restartButton.addEventListener('click', () => stopwatch.restart());
-
-function pad0(value) {
+const pad0 = (value) => {
     let result = value.toString();
     if (result.length < 2) {
         result = '0' + result;
     }
     return result;
 }
+ReactDOM.render(
+    <Stopwatch />,
+    document.getElementById('app')
+  );
